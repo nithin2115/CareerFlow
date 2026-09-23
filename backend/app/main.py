@@ -1,6 +1,18 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
+from app.core.database import get_db
+#from sqlalchemy import func, select
+#from app.models.user import User
 app=FastAPI()
 @app.get("/")
 def root():
     return {"message": "Welcome to CareerFlow Backend!"}
-    
+'''@app.get("/db-test")    
+def db_test(db=Depends(get_db)):
+    user_count = db.scalar(
+        select(func.count(User.id))
+    )
+
+    return {
+        "message": "Database session is working",
+        "user_count": user_count,
+    }''' # seession communicate with postgresql testing donne
