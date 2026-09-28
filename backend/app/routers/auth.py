@@ -8,7 +8,8 @@ from sqlalchemy import select
 from app.models.user import User
 from app.core.security import hash_password,verify_password
 from app.core.jwt import create_access_token
-
+from app.core.auth import get_current_user
+from app.schemas.auth import UserResponse
 router = APIRouter(prefix="/auth",tags=["Authentication"])
 @router.post("/register",response_model=RegisterResponse)
 def register(request: RegisterRequest,db: Session = Depends(get_db)):
@@ -46,4 +47,11 @@ def login(request: LoginRequest,db: Session = Depends(get_db)):
       "role":user.role.value
     })
     return LoginResponse(access_token=access_token, token_type="bearer") # retuning jwt token
+router = APIRouter(
+    prefix="/users",
+    tags=["Users"],
+)
+@router.get("/me",response_model=UserResponse)
+def get_my_profile(current_user:User=Depends(get_current_user)):
+    return current_user
     
