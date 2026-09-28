@@ -3,10 +3,11 @@ from app.core import database
 from fastapi import APIRouter, Depends,HTTPException
 from sqlalchemy.orm import Session
 from app.core.database import get_db
-from app.schemas.auth import RegisterRequest,RegisterResponse
+from app.schemas.auth import RegisterRequest,RegisterResponse,LoginRequest,LoginResponse
 from sqlalchemy import select
 from app.models.user import User
-from app.core.security import hash_password
+from app.core.security import hash_password,verify_password
+from app.core.jwt import create_access_token
 
 router = APIRouter(prefix="/auth",tags=["Authentication"])
 @router.post("/register",response_model=RegisterResponse)
@@ -33,3 +34,16 @@ def register(request: RegisterRequest,db: Session = Depends(get_db)):
     role=user.role.value,
     is_active=user.is_active,
 )
+@router.post("/login",response_model=LoginResponse)
+def login(request: LoginRequest,db: Session = Depends(get_db)):
+    user = db.scalar(select(User).where(User.username == request.username)) # finding the user in db using username
+    if not user:
+        raise HTTPException(status_code=401,detail="Invalid username or password")
+    if not verify_password(request.password, user.password_hash): # checking the password using verify_password() function
+        raise HTTPException(status_code=401,detail="Invalid username or password")
+    access_token=create_access_token({ # create jwt after password verification using payload contain user id and role
+      "sub":str(user.id),
+      "role":user.role.value
+    })
+    return LoginResponse(access_token=access_token, token_type="bearer") # retuning jwt token
+    
