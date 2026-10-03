@@ -2,6 +2,7 @@ from logging.config import fileConfig
 from sqlalchemy import pool
 from app.core.base import Base
 from app.models.user import User
+from app.models.candidate_profile import CandidateProfile
 from dotenv import load_dotenv
 from alembic import context
 import os

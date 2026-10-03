@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends
 from app.core.database import get_db
 from app.routers.auth import router as auth_router
 from app.routers.auth import router as users_router
+from app.routers.candidate_profile import router as candidate_profile_router
 from app.core.auth import get_current_user
 from app.core.auth import  require_role
 from app.models.user import UserRole
@@ -10,6 +11,7 @@ from app.models.user import UserRole
 app=FastAPI()
 app.include_router(auth_router)
 app.include_router(users_router)
+app.include_router(candidate_profile_router)
 
 @app.get("/")
 def root():

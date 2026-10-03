@@ -1,8 +1,11 @@
 from sqlalchemy import Integer,String,Enum,Boolean,DateTime,func
 from datetime import datetime
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column,relationship
 from app.core.base import Base
 from enum import Enum as PyEnum
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from app.models.candidate_profile import CandidateProfile
 class UserRole(str, PyEnum):
     CANDIDATE = "candidate"
     RECRUITER = "recruiter"
@@ -18,4 +21,5 @@ class User(Base):
     is_active:Mapped[bool] = mapped_column(Boolean,nullable=False,default=True)
     created_at:Mapped[datetime] = mapped_column(DateTime,nullable=False,server_default=func.now())
     updated_at:Mapped[datetime] = mapped_column(DateTime,nullable=False,server_default=func.now(),onupdate=func.now())
+    candidate_profile: Mapped["CandidateProfile | None"] = relationship(back_populates="user",uselist=False)
     
