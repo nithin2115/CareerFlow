@@ -3,7 +3,9 @@ from sqlalchemy import DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.base import Base
 from app.models.user import User
-
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from app.models.resume import Resume
 class CandidateProfile(Base):
     __tablename__ = "candidate_profiles"
 
@@ -68,5 +70,8 @@ class CandidateProfile(Base):
     )
 
     user: Mapped[User] = relationship(
+        back_populates="candidate_profile",
+    )
+    resumes: Mapped[list["Resume"]] = relationship(
         back_populates="candidate_profile",
     )

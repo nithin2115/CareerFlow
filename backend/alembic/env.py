@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 from alembic import context
 import os
 from sqlalchemy import pool, create_engine
+from app.models.resume import Resume
 load_dotenv()
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
