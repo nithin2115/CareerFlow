@@ -7,3 +7,5 @@ __pycache__/
 
 # Environment variables / secrets
 .env
+# Uploaded files
+storage/
