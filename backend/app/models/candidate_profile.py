@@ -7,7 +7,8 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.models.resume import Resume
     from app.models.experience import Experience
-    from app.models.education import Education   
+    from app.models.education import Education
+    from app.models.skills import Skill   
 class CandidateProfile(Base):
     __tablename__ = "candidate_profiles"
 
@@ -83,3 +84,7 @@ class CandidateProfile(Base):
     educations: Mapped[list["Education"]] = relationship(
         back_populates="candidate_profile",
     )
+    skills: Mapped[list["Skill"]] = relationship(
+        back_populates="candidate_profile",
+    )
+    
