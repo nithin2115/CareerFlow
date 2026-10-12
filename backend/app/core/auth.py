@@ -29,7 +29,7 @@ def get_current_user(token: str = Depends(get_token),db: Session = Depends(get_d
         user_id = int(user_id)
     except (TypeError, ValueError):
         raise HTTPException(status_code=401,detail="Invalid user identity in token")
-    user = db.scalar(select(User).where(User.id == user_id))
+    user = db.scalar(select(User).where(User.id == user_id)) # search in database if user_id is exists or not for logged in user
     if user is None:
         raise HTTPException(status_code=404,detail="User not found")
 
