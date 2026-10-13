@@ -127,6 +127,6 @@ def delete_experience(
             detail="Unable to delete experience",
         )
 
-    return None
+    return {"message": "Experience Details deleted successfully."}
 
     

@@ -178,4 +178,4 @@ def delete_certification(certification_id: int,current_user: User = Depends(requ
     except SQLAlchemyError:
         db.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="Unable to delete certification")
-    return None
+    return {"message": "Certification Details deleted successfully."}

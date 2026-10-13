@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from app.models.education import Education
     from app.models.skills import Skill   
     from app.models.certification import Certification
+    from app.models.project import Project
 class CandidateProfile(Base):
     __tablename__ = "candidate_profiles"
 
@@ -89,6 +90,9 @@ class CandidateProfile(Base):
         back_populates="candidate_profile",
     )
     certifications: Mapped[list["Certification"]] = relationship(
+        back_populates="candidate_profile",
+    )
+    projects: Mapped[list["Project"]] = relationship(
         back_populates="candidate_profile",
     )
     

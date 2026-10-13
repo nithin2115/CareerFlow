@@ -93,18 +93,8 @@ def get_education(
 
     return education
 
-@router.patch(
-    "/{education_id}",
-    response_model=EducationResponse,
-)
-def update_education(
-    education_id: int,
-    education_data: EducationUpdate,
-    current_user: User = Depends(
-        require_role(UserRole.CANDIDATE)
-    ),
-    db: Session = Depends(get_db),
-):
+@router.patch( "/{education_id}",response_model=EducationResponse)
+def update_education(education_id: int,education_data: EducationUpdate,current_user: User = Depends(require_role(UserRole.CANDIDATE)),db: Session = Depends(get_db)):
     candidate_profile = db.scalar(
         select(CandidateProfile).where(
             CandidateProfile.user_id == current_user.id
@@ -212,4 +202,4 @@ def delete_education(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to delete education",
         )
-    return None
+    return {"message": "Education Details deleted successfully."}

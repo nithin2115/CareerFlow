@@ -6,3 +6,4 @@ from app.schemas.auth import  UserResponse
 from app.schemas.resume import   ResumeResponse
 from app.schemas.auth import RegisterRequest,RegisterResponse,LoginRequest,LoginResponse
 from app.schemas.CertificationSchema import CertificationBase, CertificationCreate, CertificationUpdate, CertificationResponse
+from app.schemas.ProjectSchema import ProjectBase, ProjectCreate, ProjectUpdate, ProjectResponse

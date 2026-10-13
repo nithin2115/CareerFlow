@@ -12,13 +12,7 @@ from app.schemas import SkillCreate, SkillResponse, SkillUpdate
 router = APIRouter(prefix="/skills", tags=["Skills"])
 
 @router.post("",response_model=SkillResponse,status_code=status.HTTP_201_CREATED)
-def create_skill(
-    skill_data: SkillCreate,
-    current_user: User = Depends(
-        require_role(UserRole.CANDIDATE)
-    ),
-    db: Session = Depends(get_db),
-):
+def create_skill(skill_data: SkillCreate,current_user: User = Depends(require_role(UserRole.CANDIDATE)),db: Session = Depends(get_db),):
     candidate_profile = db.scalar(
         select(CandidateProfile).where(
             CandidateProfile.user_id == current_user.id
@@ -265,3 +259,4 @@ def delete_skill(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Unable to delete skill",
         )
+    return {"message": "Skills deleted successfully."}
