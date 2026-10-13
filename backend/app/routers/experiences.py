@@ -81,17 +81,8 @@ def update_experience(experience_id: int,experience_data:ExperienceUpdate,curren
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,detail="Unable to update experience")
     return experience
 
-@router.delete(
-    "/{experience_id}",
-    status_code=status.HTTP_204_NO_CONTENT,
-)
-def delete_experience(
-    experience_id: int,
-    current_user: User = Depends(
-        require_role(UserRole.CANDIDATE)
-    ),
-    db: Session = Depends(get_db),
-):
+@router.delete("/{experience_id}",status_code=status.HTTP_204_NO_CONTENT)
+def delete_experience(experience_id: int,current_user: User = Depends(require_role(UserRole.CANDIDATE)),db: Session = Depends(get_db)):
     candidate_profile = db.scalar(
         select(CandidateProfile).where(
             CandidateProfile.user_id == current_user.id
