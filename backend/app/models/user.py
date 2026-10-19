@@ -6,6 +6,9 @@ from enum import Enum as PyEnum
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from app.models.candidate_profile import CandidateProfile
+    from app.models.recruiter_company import RecruiterCompany
+    from app.models.jobs import Job
+
 class UserRole(str, PyEnum):
     CANDIDATE = "candidate"
     RECRUITER = "recruiter"
@@ -22,4 +25,9 @@ class User(Base):
     created_at:Mapped[datetime] = mapped_column(DateTime,nullable=False,server_default=func.now())
     updated_at:Mapped[datetime] = mapped_column(DateTime,nullable=False,server_default=func.now(),onupdate=func.now())
     candidate_profile: Mapped["CandidateProfile | None"] = relationship(back_populates="user",uselist=False)
-    
+    recruiter_memberships: Mapped[list["RecruiterCompany"]] = relationship(
+        back_populates="user",
+    )
+    posted_jobs: Mapped[list["Job"]] = relationship(
+        back_populates="posted_by",
+    )

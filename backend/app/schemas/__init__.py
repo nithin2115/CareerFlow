@@ -8,3 +8,4 @@ from app.schemas.auth import RegisterRequest,RegisterResponse,LoginRequest,Login
 from app.schemas.CertificationSchema import CertificationBase, CertificationCreate, CertificationUpdate, CertificationResponse
 from app.schemas.ProjectSchema import ProjectBase, ProjectCreate, ProjectUpdate, ProjectResponse
 from app.schemas.career_interest import CareerInterestBase, CareerInterestCreate, CareerInterestUpdate, CareerInterestResponse
+from app.schemas.jobs import JobCreate, JobUpdate

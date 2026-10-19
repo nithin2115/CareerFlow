@@ -7,4 +7,9 @@ from app.models.skills import Skill
 from app.models.certification import Certification
 from app.models.project import Project
 from app.models.careerInterest import CareerInterest
-__all__ = ["User", "CandidateProfile", "Resume","Experience","Education","Skill","Certification","Project","CareerInterest"]
+from app.models.company import Company
+from app.models.recruiter_company import RecruiterCompany,MembershipStatus,CompanyMembershipRole
+from app.models.jobs import Job,EmploymentType,WorkArrangement,JobStatus
+
+
+__all__ = ["User", "CandidateProfile", "Resume","Experience","Education","Skill","Certification","Project","CareerInterest","Company", "RecruiterCompany", "Job","MembershipStatus","CompanyMembershipRole","EmploymentType","WorkArrangement","JobStatus"]

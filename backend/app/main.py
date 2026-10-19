@@ -10,12 +10,15 @@ from app.routers.skills import router as skills_router
 from app.routers.certifications import router as certifications_router
 from app.routers.projects import router as projects_router
 from app.routers.career_interest import router as career_interests_router
+from app.routers.recruiter import router as recruiter_router
+from app.routers.companycreate import router as company_router
+from app.routers.jobs import router as jobs_router
 from app.core.auth import get_current_user
 from app.core.auth import  require_role
 from app.models.user import UserRole
 #from sqlalchemy import func, select
 #from app.models.user import User
-from app.models import User, CandidateProfile, Resume,Experience,Education,Skill,Certification,Project,CareerInterest
+from app.models import User, CandidateProfile, Resume,Experience,Education,Skill,Certification,Project,CareerInterest,Company,RecruiterCompany,Job
 app=FastAPI()
 app.include_router(auth_router)
 app.include_router(users_router)
@@ -27,6 +30,9 @@ app.include_router(skills_router)
 app.include_router(certifications_router)
 app.include_router(projects_router)
 app.include_router(career_interests_router)
+app.include_router(recruiter_router)
+app.include_router(company_router)
+app.include_router(jobs_router)
 @app.get("/")
 def root():
     return {"message": "Welcome to CareerFlow Backend!"}
