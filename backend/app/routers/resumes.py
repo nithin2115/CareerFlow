@@ -11,6 +11,12 @@ from app.models.user import User, UserRole
 from app.schemas.resume import ResumeResponse
 from fastapi import HTTPException
 from app.models.resume import Resume
+from fastapi.responses import FileResponse
+from app.models.applications import Application
+from app.core.company_auth import authorize_company_access
+from app.models.jobs import Job
+from app.models.recruiter_company import CompanyMembershipRole
+
 router = APIRouter(
     prefix="/resumes",
     tags=["Resumes"],
@@ -144,5 +150,52 @@ def delete_resume(resume_id: int,current_user: User = Depends(require_role(UserR
     db.commit()
     return
 
-  
+# 5. Download a resume submitted with an application
+@router.get("/applications/{application_id}/download")
+def download_application_resume(
+    application_id: int,
+    current_user: User = Depends(require_role(UserRole.RECRUITER)),
+    db: Session = Depends(get_db),
+):
+    statement = (
+        select(Application, Job, Resume)
+        .join(Job, Application.job_id == Job.id)
+        .join(Resume, Application.resume_id == Resume.id)
+        .where(Application.id == application_id)
+    )
+
+    result = db.execute(statement).first()
+
+    if result is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Application not found",
+        )
+
+    application, job, resume = result
+
+    authorize_company_access(
+        db=db,
+        current_user=current_user,
+        company_id=job.company_id,
+        allowed_roles={
+            CompanyMembershipRole.COMPANY_ADMIN,
+            CompanyMembershipRole.RECRUITER,
+        },
+    )
+
+    file_path = Path(resume.file_path)
+
+    if not file_path.is_file():
+        raise HTTPException(
+            status_code=404,
+            detail="Resume file not found",
+        )
+
+    return FileResponse(
+        path=file_path,
+        media_type="application/octet-stream",
+        filename=resume.original_filename,
+    )
+
     
