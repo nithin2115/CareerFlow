@@ -3,6 +3,7 @@ from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.base import Base
 from app.models.candidate_profile import CandidateProfile
+from app.models.applications import Application
 
 class Resume(Base):
     __tablename__ = "resumes"
@@ -65,4 +66,7 @@ class Resume(Base):
 
     candidate_profile: Mapped[CandidateProfile] = relationship(
         back_populates="resumes",
+    )
+    applications: Mapped["Application"] = relationship(
+        back_populates="resume",
     )

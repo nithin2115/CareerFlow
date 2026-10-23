@@ -13,6 +13,8 @@ from app.routers.career_interest import router as career_interests_router
 from app.routers.recruiter import router as recruiter_router
 from app.routers.companycreate import router as company_router
 from app.routers.jobs import router as jobs_router
+from app.routers.job_discovery import router as job_discovery_router
+from app.routers.applications import router as applications_router
 from app.core.auth import get_current_user
 from app.core.auth import  require_role
 from app.models.user import UserRole
@@ -33,6 +35,8 @@ app.include_router(career_interests_router)
 app.include_router(recruiter_router)
 app.include_router(company_router)
 app.include_router(jobs_router)
+app.include_router(job_discovery_router)
+app.include_router(applications_router)
 @app.get("/")
 def root():
     return {"message": "Welcome to CareerFlow Backend!"}
