@@ -17,6 +17,7 @@ from app.core.base import Base
 
 if TYPE_CHECKING:
     from app.models.resume import Resume
+    from app.models.interviews import Interview
 
 
 class ApplicationStatus(str, PyEnum):
@@ -86,3 +87,6 @@ class Application(Base):
         onupdate=func.now(),
     )
     resume: Mapped["Resume"] = relationship()
+    interviews: Mapped[list["Interview"]] = relationship(
+        back_populates="application"
+    )

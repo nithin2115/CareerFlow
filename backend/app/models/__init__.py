@@ -10,6 +10,7 @@ from app.models.careerInterest import CareerInterest
 from app.models.company import Company
 from app.models.recruiter_company import RecruiterCompany,MembershipStatus,CompanyMembershipRole
 from app.models.jobs import Job,EmploymentType,WorkArrangement,JobStatus
+from app.models.interviews import Interview
 
 
-__all__ = ["User", "CandidateProfile", "Resume","Experience","Education","Skill","Certification","Project","CareerInterest","Company", "RecruiterCompany", "Job","MembershipStatus","CompanyMembershipRole","EmploymentType","WorkArrangement","JobStatus"]
+__all__ = ["User", "CandidateProfile", "Resume","Experience","Education","Skill","Certification","Project","CareerInterest","Company", "RecruiterCompany", "Job","MembershipStatus","CompanyMembershipRole","EmploymentType","WorkArrangement","JobStatus","Interview"]

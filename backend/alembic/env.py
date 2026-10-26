@@ -8,6 +8,7 @@ from alembic import context
 import os
 from sqlalchemy import pool, create_engine
 from app.models.resume import Resume
+from app.models.interviews import Interview
 load_dotenv()
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
