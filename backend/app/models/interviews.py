@@ -1,5 +1,6 @@
 from datetime import datetime
 from enum import Enum as PyEnum
+from app.models.notification import Notification
 from sqlalchemy import (
     DateTime,
     Enum,
@@ -12,12 +13,16 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.core.base import Base
 from app.models.applications import Application
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from app.models.applications import Application
+    from app.models.notification import Notification
+    
 class InterviewType(str, PyEnum):
     TECHNICAL = "technical"
     HR = "hr"
     MANAGERIAL = "managerial"
     OTHER = "other"
-
 
 class InterviewStatus(str, PyEnum):
     SCHEDULED = "scheduled"
@@ -89,4 +94,7 @@ class Interview(Base):
 
     application: Mapped["Application"] = relationship(
     back_populates="interviews"
+)
+    notifications: Mapped[list["Notification"]] = relationship(
+    back_populates="interview"
 )

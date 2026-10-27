@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum as PyEnum
 from typing import TYPE_CHECKING
-
+from app.models.notification import Notification
 from sqlalchemy import (
     DateTime,
     Enum,
@@ -90,3 +90,10 @@ class Application(Base):
     interviews: Mapped[list["Interview"]] = relationship(
         back_populates="application"
     )
+
+    notifications: Mapped[list["Notification"]] = relationship(
+        back_populates="application"
+    )
+    
+
+

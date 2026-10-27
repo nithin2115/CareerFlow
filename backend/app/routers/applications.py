@@ -1,30 +1,40 @@
 from datetime import date
-from fastapi import APIRouter, Depends, HTTPException,Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.core.auth import require_role
+from app.core.company_auth import authorize_company_access
 from app.core.database import get_db
 from app.models.applications import Application, ApplicationStatus
 from app.models.candidate_profile import CandidateProfile
 from app.models.jobs import Job, JobStatus
-from app.schemas.applications import RecruiterApplicantDetailsResponse
+from app.models.notification import Notification, NotificationType
+from app.models.recruiter_company import (
+    CompanyMembershipRole,
+    MembershipStatus,
+    RecruiterCompany,
+)
 from app.models.resume import Resume
-from app.schemas.applications import ApplicationStatusUpdate
 from app.models.user import User, UserRole
-from app.core.company_auth import authorize_company_access
-from app.models.recruiter_company import CompanyMembershipRole
-from app.models.candidate_profile import CandidateProfile
 from app.schemas.applications import (
     ApplicationCreate,
     ApplicationResponse,
+    ApplicationStatusUpdate,
     MyApplicationResponse,
+    RecruiterApplicantDetailsResponse,
 )
 
 router = APIRouter(prefix="/applications", tags=["Applications"])
 
-@router.post("/{job_id}",response_model=ApplicationResponse,status_code=201,)
-def apply_for_job(job_id: int,request: ApplicationCreate,db: Session = Depends(get_db),current_user: User = Depends(require_role(UserRole.CANDIDATE)),):
+
+@router.post("/{job_id}", response_model=ApplicationResponse, status_code=201)
+def apply_for_job(
+    job_id: int,
+    request: ApplicationCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_role(UserRole.CANDIDATE)),
+):
     job = db.get(Job, job_id)
 
     if job is None or job.status != JobStatus.PUBLISHED:
@@ -84,8 +94,35 @@ def apply_for_job(job_id: int,request: ApplicationCreate,db: Session = Depends(g
 
     try:
         db.add(application)
+        db.flush()
+
+        recruiter_membership = db.scalar(
+            select(RecruiterCompany).where(
+                RecruiterCompany.user_id == job.posted_by_user_id,
+                RecruiterCompany.company_id == job.company_id,
+                RecruiterCompany.role.in_(
+                    [
+                        CompanyMembershipRole.COMPANY_ADMIN,
+                        CompanyMembershipRole.RECRUITER,
+                    ]
+                ),
+                RecruiterCompany.status == MembershipStatus.ACTIVE,
+            )
+        )
+
+        if recruiter_membership is not None:
+            notification = Notification(
+                user_id=job.posted_by_user_id,
+                type=NotificationType.APPLICATION_RECEIVED,
+                title="New job application",
+                message=f"A candidate has applied for your job: {job.title}",
+                application_id=application.id,
+            )
+            db.add(notification)
+
         db.commit()
         db.refresh(application)
+
     except IntegrityError:
         db.rollback()
         raise HTTPException(
@@ -325,6 +362,7 @@ def get_recruiter_applicant_details(
 
 
 # 7. Shortlist or reject an applicant
+
 @router.patch("/{application_id}/status", response_model=ApplicationResponse)
 def update_application_status(
     application_id: int,
@@ -332,7 +370,7 @@ def update_application_status(
     db: Session = Depends(get_db),
     current_user: User = Depends(require_role(UserRole.RECRUITER)),
 ):
-    application = db.get(Application, application_id) # get application from application id
+    application = db.get(Application, application_id)
 
     if application is None:
         raise HTTPException(
@@ -340,7 +378,7 @@ def update_application_status(
             detail="Application not found",
         )
 
-    job = db.get(Job, application.job_id) # get job from application 
+    job = db.get(Job, application.job_id)
 
     if job is None:
         raise HTTPException(
@@ -373,9 +411,9 @@ def update_application_status(
         },
     }
 
-    allowed_statuses = allowed_transitions.get(application.status, set()) # get allowed statuses from application status
+    allowed_statuses = allowed_transitions.get(application.status, set())
 
-    if request.status not in allowed_statuses: # check if new status is allowed
+    if request.status not in allowed_statuses:
         raise HTTPException(
             status_code=409,
             detail=(
@@ -384,9 +422,30 @@ def update_application_status(
             ),
         )
 
-    application.status = request.status # update application status
+    application.status = request.status
 
-    db.commit()
-    db.refresh(application)
+    try:
+        notification = Notification(
+            user_id=application.candidate_id,
+            type=NotificationType.APPLICATION_STATUS_UPDATED,
+            title="Application status updated",
+            message=(
+                f"Your application for '{job.title}' "
+                f"has been updated to "
+                f"{request.status.value.replace('_', ' ')}."
+            ),
+            application_id=application.id,
+        )
+
+        db.add(notification)
+        db.commit()
+        db.refresh(application)
+
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=409,
+            detail="Application status update could not be saved",
+        )
 
     return application

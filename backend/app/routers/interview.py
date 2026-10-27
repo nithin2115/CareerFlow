@@ -1,3 +1,4 @@
+from app.core import database
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -10,6 +11,7 @@ from app.models.recruiter_company import CompanyMembershipRole
 from app.models.user import User, UserRole
 from app.schemas.interview import InterviewCreate, InterviewResponse,InterviewReschedule,InterviewFeedback
 from app.core.company_auth import authorize_company_access
+from app.models.notification import Notification, NotificationType
 
 router = APIRouter(prefix="/interviews", tags=["Interviews"])
 
@@ -76,11 +78,33 @@ def create_interview(
         status=InterviewStatus.SCHEDULED,
     )
 
-    db.add(interview)
-    db.commit()
-    db.refresh(interview)
+    try:
+        db.add(interview)
+        db.flush()
+
+        notification = Notification(
+            user_id=application.candidate_id,
+            type=NotificationType.INTERVIEW_SCHEDULED,
+            title="Interview scheduled",
+            message=(
+                f"An interview has been scheduled for your application "
+                f"to '{job.title}' on "
+            f"{interview.scheduled_at.isoformat()}."
+        ),
+        application_id=application.id,
+        interview_id=interview.id,
+    )
+
+        db.add(notification)
+        db.commit()
+        db.refresh(interview)
+
+    except Exception:
+        db.rollback()
+        raise
 
     return interview
+
 
 #Get interviews
 
@@ -142,7 +166,6 @@ def get_job_interviews(
     return interviews
 
 # update the interview schedule
-
 @router.patch("/{interview_id}/reschedule", response_model=InterviewResponse)
 def reschedule_interview(
     interview_id: int,
@@ -195,14 +218,30 @@ def reschedule_interview(
     interview.duration_minutes = interview_data.duration_minutes
     interview.meeting_link = interview_data.meeting_link
 
-    db.commit()
-    db.refresh(interview)
+    try:
+        notification = Notification(
+            user_id=application.candidate_id,
+            type=NotificationType.INTERVIEW_RESCHEDULED,
+            title="Interview rescheduled",
+            message=(
+                f"Your interview for '{job.title}' has been rescheduled to "
+                f"{interview.scheduled_at.isoformat()}."
+            ),
+            application_id=application.id,
+            interview_id=interview.id,
+        )
+
+        db.add(notification)
+        db.commit()
+        db.refresh(interview)
+
+    except Exception:
+        db.rollback()
+        raise
 
     return interview
 
 # Cancel the interview
-
-
 @router.patch("/{interview_id}/cancel", response_model=InterviewResponse)
 def cancel_interview(
     interview_id: int,
@@ -252,8 +291,26 @@ def cancel_interview(
 
     interview.status = InterviewStatus.CANCELLED
 
-    db.commit()
-    db.refresh(interview)
+    try:
+        notification = Notification(
+            user_id=application.candidate_id,
+            type=NotificationType.INTERVIEW_CANCELLED,
+            title="Interview cancelled",
+            message=(
+                f"Your interview for '{job.title}' scheduled for "
+                f"{interview.scheduled_at.isoformat()} has been cancelled."
+            ),
+            application_id=application.id,
+            interview_id=interview.id,
+        )
+
+        db.add(notification)
+        db.commit()
+        db.refresh(interview)
+
+    except Exception:
+        db.rollback()
+        raise
 
     return interview
 
@@ -314,8 +371,6 @@ def complete_interview(
     return interview
 
 #Feedback on the interview
-
-
 @router.patch("/{interview_id}/feedback", response_model=InterviewResponse)
 def add_interview_feedback(
     interview_id: int,
